@@ -1,5 +1,6 @@
 # Dependency directories
 node_modules/
+backend/node_modules/
 jspm_packages/
 
 # Debug logs
@@ -9,6 +10,7 @@ yarn-error.log*
 
 # Local environment variables and secrets
 .env
+backend/.env
 .env.local
 .env.development.local
 .env.test.local
