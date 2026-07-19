@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import UserPicker from '../components/UserPicker';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const fmt = (iso) =>
@@ -228,12 +229,10 @@ export default function TeamDetail() {
               <div className="rounded-xl border border-white/10 bg-white/3 p-5">
                 <h3 className="text-sm font-semibold text-slate-300 mb-3">➕ Add Member</h3>
                 <form onSubmit={handleAddMember} className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Paste user's MongoDB ID"
+                  <UserPicker
+                    placeholder="Search user to add..."
                     value={memberId}
-                    onChange={(e) => { setMemberId(e.target.value); setMemberErr(''); }}
-                    className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-slate-500 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500 transition"
+                    onChange={(val) => { setMemberId(val); setMemberErr(''); }}
                   />
                   <button
                     type="submit"

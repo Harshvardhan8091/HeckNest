@@ -185,7 +185,7 @@ export default function HackathonDetails() {
           <div className="mt-10 border-t border-white/10 pt-8">
             {isParticipant ? (
               <Link
-                to="/teams/create"
+                to={`/teams/create?hackathonId=${h._id}`}
                 className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 text-sm font-semibold text-white shadow-lg
                   hover:from-purple-500 hover:to-pink-500 transition active:scale-95"
               >

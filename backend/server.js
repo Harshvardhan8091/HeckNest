@@ -8,8 +8,9 @@ const hackathonRoutes = require('./routes/hackathonRoutes');
 const teamRoutes = require('./routes/teamRoutes');
 const registrationRoutes = require('./routes/registrationRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
-const reviewRoutes = require('./routes/reviewRoutes');
+const reviewRoutes      = require('./routes/reviewRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
+const userRoutes        = require('./routes/userRoutes');
 
 const app = express();
 
@@ -26,8 +27,9 @@ app.use('/api/hackathons', hackathonRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/registrations', registrationRoutes);
 app.use('/api/submissions', submissionRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/reviews',      reviewRoutes);
+app.use('/api/leaderboard',  leaderboardRoutes);
+app.use('/api/users',        userRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });

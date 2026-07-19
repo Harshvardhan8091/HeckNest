@@ -11,6 +11,15 @@ import HackathonDetails from './pages/HackathonDetails';
 
 // Participant pages
 import ParticipantDashboard from './pages/participant/ParticipantDashboard';
+
+// Organizer pages
+import OrganizerDashboard from './pages/organizer/OrganizerDashboard';
+import CreateHackathon    from './pages/organizer/CreateHackathon';
+import ManageHackathon   from './pages/organizer/ManageHackathon';
+
+// Judge pages
+import JudgeDashboard    from './pages/judge/JudgeDashboard';
+import ReviewSubmission  from './pages/judge/ReviewSubmission';
 import CreateTeam from './pages/participant/CreateTeam';
 import TeamDetail from './pages/TeamDetail';
 import SubmissionForm from './pages/SubmissionForm';
@@ -63,7 +72,23 @@ function App() {
             path="/organizer/dashboard"
             element={
               <ProtectedRoute roles={['organizer']}>
-                <DashboardPlaceholder role="organizer" />
+                <OrganizerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/organizer/hackathons/create"
+            element={
+              <ProtectedRoute roles={['organizer']}>
+                <CreateHackathon />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/organizer/hackathons/:id"
+            element={
+              <ProtectedRoute roles={['organizer']}>
+                <ManageHackathon />
               </ProtectedRoute>
             }
           />
@@ -102,12 +127,20 @@ function App() {
             }
           />
 
-          {/* ── Judge ───────────────────────────────────────────────────── */}
+          {/* ── Judge ───────────────────────────────────────────────── */}
           <Route
             path="/judge/dashboard"
             element={
               <ProtectedRoute roles={['judge']}>
-                <DashboardPlaceholder role="judge" />
+                <JudgeDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/judge/review/:submissionId"
+            element={
+              <ProtectedRoute roles={['judge']}>
+                <ReviewSubmission />
               </ProtectedRoute>
             }
           />
