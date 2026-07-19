@@ -54,6 +54,12 @@ const hackathonSchema = new Schema(
       ref: 'User',
       required: true,
     },
+    assignedJudges: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     status: {
       type: String,
       enum: ['upcoming', 'ongoing', 'completed'],
