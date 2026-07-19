@@ -39,7 +39,9 @@ const getAllHackathons = async (req, res) => {
       filter.title = { $regex: search, $options: 'i' };
     }
 
-    const hackathons = await Hackathon.find(filter).sort({ createdAt: -1 });
+    const hackathons = await Hackathon.find(filter)
+      .populate('organizer', 'name email')
+      .sort({ createdAt: -1 });
     return res.status(200).json(hackathons);
   } catch (error) {
     console.error('Get All Hackathons Error:', error);

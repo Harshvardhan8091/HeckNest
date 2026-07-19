@@ -12,6 +12,9 @@ import HackathonDetails from './pages/HackathonDetails';
 // Participant pages
 import ParticipantDashboard from './pages/participant/ParticipantDashboard';
 
+// Admin pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+
 // Organizer pages
 import OrganizerDashboard from './pages/organizer/OrganizerDashboard';
 import CreateHackathon    from './pages/organizer/CreateHackathon';
@@ -62,7 +65,7 @@ function App() {
             path="/admin/dashboard"
             element={
               <ProtectedRoute roles={['admin']}>
-                <DashboardPlaceholder role="admin" />
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />
