@@ -55,25 +55,28 @@ export default function ParticipantDashboard() {
   const [registrations, setRegistrations] = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const [t, r, s] = await Promise.all([
-          api.get('/teams/my'),
-          api.get('/registrations/my'),
-          api.get('/submissions/my'),
-        ]);
-        setTeams(t.data);
-        setRegistrations(r.data);
-        setSubmissions(s.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const loadData = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const [t, r, s] = await Promise.all([
+        api.get('/teams/my'),
+        api.get('/registrations/my'),
+        api.get('/submissions/my'),
+      ]);
+      setTeams(t.data);
+      setRegistrations(r.data);
+      setSubmissions(s.data);
+    } catch (err) {
+      setError(err.response?.data?.message ?? 'Failed to load dashboard data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
@@ -127,6 +130,19 @@ export default function ParticipantDashboard() {
             🔍 Browse Hackathons
           </Link>
         </div>
+
+        {/* Error state */}
+        {error && (
+          <div className="mb-8 flex flex-col gap-3 rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-sm text-red-300 sm:flex-row sm:items-center sm:justify-between">
+            <span className="flex items-start gap-2"><span>⚠️</span><span>{error}</span></span>
+            <button
+              onClick={loadData}
+              className="shrink-0 rounded-lg border border-red-500/40 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-500/20 transition"
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
         {/* Teams section */}
         <section>

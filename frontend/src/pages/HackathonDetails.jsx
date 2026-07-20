@@ -182,7 +182,7 @@ export default function HackathonDetails() {
           )}
 
           {/* CTA */}
-          <div className="mt-10 border-t border-white/10 pt-8">
+          <div className="mt-10 border-t border-white/10 pt-8 flex flex-wrap items-center gap-3">
             {isParticipant ? (
               <Link
                 to={`/teams/create?hackathonId=${h._id}`}
@@ -204,6 +204,15 @@ export default function HackathonDetails() {
                 Registration is available for participants.
               </p>
             )}
+
+            {/* Leaderboard link — always visible */}
+            <Link
+              to={`/hackathons/${h._id}/leaderboard`}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-300
+                hover:border-purple-500/40 hover:text-white transition active:scale-95"
+            >
+              🏆 View Leaderboard
+            </Link>
           </div>
         </div>
 

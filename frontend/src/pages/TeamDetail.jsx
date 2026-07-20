@@ -55,9 +55,10 @@ export default function TeamDetail() {
   const [regLoading, setRegLoading] = useState(false);
   const [regError, setRegError] = useState('');
 
-  // Delete
+  // Delete / Leave
   const [deleting, setDeleting] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   // ── Fetch team ──────────────────────────────────────────────────────────────
   const loadTeam = async () => {
@@ -133,24 +134,26 @@ export default function TeamDetail() {
 
   const handleDelete = async () => {
     if (!window.confirm('Delete this team? This cannot be undone.')) return;
+    setActionError('');
     setDeleting(true);
     try {
       await api.delete(`/teams/${id}`);
       navigate('/participant/dashboard');
     } catch (err) {
-      alert(err.response?.data?.message ?? 'Failed to delete team.');
+      setActionError(err.response?.data?.message ?? 'Failed to delete team.');
       setDeleting(false);
     }
   };
 
   const handleLeave = async () => {
     if (!window.confirm('Leave this team?')) return;
+    setActionError('');
     setLeaving(true);
     try {
       await api.post(`/teams/${id}/leave`);
       navigate('/participant/dashboard');
     } catch (err) {
-      alert(err.response?.data?.message ?? 'Failed to leave team.');
+      setActionError(err.response?.data?.message ?? 'Failed to leave team.');
       setLeaving(false);
     }
   };
@@ -220,6 +223,13 @@ export default function TeamDetail() {
               })}
             </div>
           </div>
+
+          {/* Action error */}
+          {actionError && (
+            <div className="mb-4 flex items-start gap-3 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              <span>⚠️</span><span>{actionError}</span>
+            </div>
+          )}
 
           {/* ── Leader-only section ─────────────────────────────────────────── */}
           {isLeader && (

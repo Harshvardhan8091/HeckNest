@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import HackathonListing from './pages/HackathonListing';
 import HackathonDetails from './pages/HackathonDetails';
+import Leaderboard      from './pages/Leaderboard';
 
 // Participant pages
 import ParticipantDashboard from './pages/participant/ParticipantDashboard';
@@ -59,6 +60,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/hackathons" element={<HackathonListing />} />
           <Route path="/hackathons/:id" element={<HackathonDetails />} />
+          <Route path="/hackathons/:id/leaderboard" element={<Leaderboard />} />
 
           {/* ── Admin ───────────────────────────────────────────────────── */}
           <Route
