@@ -171,7 +171,7 @@ export default function HackathonDetails() {
 
         {/* Leaderboard link */}
         <Link
-          to={`/leaderboard/${id}`}
+          to={`/hackathons/${id}/leaderboard`}
           className="flex items-center justify-between rounded-xl border border-border bg-surface px-5 py-4 transition-colors hover:border-border-strong hover:bg-elevated"
         >
           <div>
