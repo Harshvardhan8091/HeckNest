@@ -28,21 +28,19 @@ import CreateTeam from './pages/participant/CreateTeam';
 import TeamDetail from './pages/TeamDetail';
 import SubmissionForm from './pages/SubmissionForm';
 
-// Dashboard placeholders (will be replaced with real pages)
+// Dashboard placeholders (fallback placeholder)
 const DashboardPlaceholder = ({ role }) => (
-  <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 flex flex-col items-center justify-center gap-4">
-    <span className="rounded-full bg-purple-500/20 px-4 py-1.5 text-sm font-medium text-purple-300 ring-1 ring-purple-500/40">
-      🚀 HeckNest
-    </span>
-    <h1 className="text-3xl font-bold text-white capitalize">{role} Dashboard</h1>
-    <p className="text-slate-400 text-sm">Coming soon — your workspace will appear here.</p>
+  <div className="min-h-screen bg-base flex flex-col items-center justify-center gap-4 px-4 text-center">
+    <p className="text-xs font-semibold uppercase tracking-widest text-text-faint">HeckNest</p>
+    <h1 className="text-2xl font-semibold text-text-primary capitalize">{role} Dashboard</h1>
+    <p className="text-text-muted text-sm">Coming soon — your workspace will appear here.</p>
     <button
       onClick={() => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';
       }}
-      className="mt-4 rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 hover:border-purple-500/50 hover:text-white transition"
+      className="mt-2 rounded-lg border border-border px-4 py-2 text-sm text-text-muted hover:border-border-strong hover:text-text-primary transition-colors"
     >
       Sign out
     </button>
