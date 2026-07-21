@@ -1,1 +1,66 @@
 @import "tailwindcss";
+
+/* ── Design Tokens ──────────────────────────────────────────────────────────── */
+@theme {
+  --color-base:          #0A0E14;
+  --color-surface:       #12161F;
+  --color-elevated:      #1A1F2B;
+  --color-border:        #232838;
+  --color-border-strong: #2E3446;
+
+  --color-text-primary:  #E8EAED;
+  --color-text-muted:    #8B92A5;
+  --color-text-faint:    #4B5265;
+
+  --color-accent:        #3B82F6;
+  --color-accent-hover:  #2563EB;
+
+  --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ── Base Styles ────────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  body {
+    background-color: #0A0E14;
+    color: #E8EAED;
+    min-height: 100vh;
+  }
+
+  /* Refined scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #232838; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2E3446; }
+
+  /* Browser autofill override */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #1A1F2B inset !important;
+    -webkit-text-fill-color: #E8EAED !important;
+    caret-color: #E8EAED;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+  /* Date inputs use dark color-scheme */
+  input[type="date"],
+  input[type="datetime-local"] { color-scheme: dark; }
+
+  /* Select dropdown options */
+  select option {
+    background-color: #1A1F2B;
+    color: #E8EAED;
+  }
+
+  /* Range inputs */
+  input[type="range"] { accent-color: #3B82F6; }
+}

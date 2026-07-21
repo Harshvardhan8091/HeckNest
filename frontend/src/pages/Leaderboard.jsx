@@ -5,39 +5,38 @@ import api from '../services/api';
 // ── Rank medal config ─────────────────────────────────────────────────────────
 const RANK_CONFIG = {
   1: {
-    medal:  '🥇',
-    row:    'bg-amber-500/10 border-l-2 border-amber-400/60',
-    rank:   'text-amber-300 font-extrabold',
-    score:  'text-amber-300',
+    medal:     '🥇',
+    podiumCls: 'border-b-2 border-amber-400/60',
+    rankCls:   'text-amber-400 font-semibold',
+    scoreCls:  'text-amber-400',
   },
   2: {
-    medal:  '🥈',
-    row:    'bg-slate-400/5 border-l-2 border-slate-400/40',
-    rank:   'text-slate-300 font-bold',
-    score:  'text-slate-300',
+    medal:     '🥈',
+    podiumCls: 'border-b-2 border-[#8B92A5]/40',
+    rankCls:   'text-text-muted font-semibold',
+    scoreCls:  'text-text-muted',
   },
   3: {
-    medal:  '🥉',
-    row:    'bg-orange-600/5 border-l-2 border-orange-600/40',
-    rank:   'text-orange-300 font-bold',
-    score:  'text-orange-300',
+    medal:     '🥉',
+    podiumCls: 'border-b-2 border-orange-500/40',
+    rankCls:   'text-orange-400 font-semibold',
+    scoreCls:  'text-orange-400',
   },
 };
 
 function getRankConfig(rank) {
   return RANK_CONFIG[rank] ?? {
-    medal: null,
-    row:   '',
-    rank:  'text-slate-500',
-    score: 'text-slate-300',
+    medal:     null,
+    podiumCls: '',
+    rankCls:   'text-text-faint',
+    scoreCls:  'text-text-muted',
   };
 }
 
-// ── Spinner ───────────────────────────────────────────────────────────────────
 function Spinner() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900">
-      <svg className="h-10 w-10 animate-spin text-purple-400" viewBox="0 0 24 24" fill="none">
+    <div className="flex min-h-screen items-center justify-center bg-base">
+      <svg className="h-8 w-8 animate-spin text-accent" viewBox="0 0 24 24" fill="none">
         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
       </svg>
@@ -73,27 +72,25 @@ export default function Leaderboard() {
   if (loading) return <Spinner />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 px-4 py-12">
-      <div className="mx-auto max-w-4xl">
+    <div className="min-h-screen bg-base">
+      {/* Header */}
+      <header className="sticky top-0 z-10 border-b border-border bg-base/95 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
+          <Link to={`/hackathons/${id}`} className="text-sm text-text-muted hover:text-text-primary transition-colors">
+            ← Back to hackathon
+          </Link>
+          <Link to="/" className="text-sm font-semibold text-text-primary">HeckNest</Link>
+        </div>
+      </header>
 
-        {/* Back link */}
-        <Link
-          to={`/hackathons/${id}`}
-          className="mb-6 inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-purple-300 transition"
-        >
-          ← Back to hackathon
-        </Link>
+      <main className="mx-auto max-w-4xl px-6 py-10">
 
-        {/* Header */}
+        {/* Page heading */}
         <div className="mb-8">
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-purple-500/15 px-3 py-1 text-xs font-semibold text-purple-300 ring-1 ring-purple-500/30">
-            🏆 Leaderboard
-          </div>
-          <h1 className="text-3xl font-extrabold text-white sm:text-4xl">
-            {hackathonName}
-          </h1>
+          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-text-faint">Leaderboard</p>
+          <h1 className="text-2xl font-semibold text-text-primary">{hackathonName}</h1>
           {!error && entries.length > 0 && (
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-text-muted">
               {entries.length} team{entries.length !== 1 ? 's' : ''} ranked
             </p>
           )}
@@ -101,47 +98,38 @@ export default function Leaderboard() {
 
         {/* Error */}
         {error && (
-          <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-sm text-red-300 flex items-start gap-3">
-            <span>⚠️</span><span>{error}</span>
+          <div className="flex items-start gap-2.5 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            <span className="shrink-0">⚠</span><span>{error}</span>
           </div>
         )}
 
         {/* Empty state */}
         {!error && entries.length === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 py-24 text-center">
-            <span className="text-5xl mb-4">🏁</span>
-            <h2 className="text-xl font-bold text-white mb-2">No results yet</h2>
-            <p className="text-sm text-slate-400">
-              No submissions have been reviewed yet. Check back after judging is complete.
-            </p>
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
+            <p className="text-sm font-medium text-text-muted">No results yet</p>
+            <p className="mt-1 text-xs text-text-faint">Check back after judging is complete.</p>
           </div>
         )}
 
-        {/* ── Leaderboard table ──────────────────────────────────────────────── */}
+        {/* Leaderboard */}
         {!error && entries.length > 0 && (
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
+          <div className="overflow-hidden rounded-xl border border-border bg-surface">
 
             {/* Top-3 podium strip */}
             {entries.length >= 1 && (
-              <div className="grid grid-cols-1 gap-px border-b border-white/10 sm:grid-cols-3 bg-white/5">
+              <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
                 {entries.slice(0, Math.min(3, entries.length)).map((entry) => {
                   const cfg = getRankConfig(entry.rank);
                   return (
                     <div key={entry.submissionId}
-                      className={`flex flex-col items-center gap-1 px-5 py-6 ${cfg.row}`}>
-                      <span className="text-3xl">{cfg.medal}</span>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mt-1">
-                        Rank {entry.rank}
-                      </p>
-                      <p className="text-base font-bold text-white text-center leading-tight">
-                        {entry.teamName}
-                      </p>
-                      <p className="text-xs text-slate-400 text-center truncate w-full px-2">
-                        {entry.projectName}
-                      </p>
-                      <p className={`mt-2 text-xl font-extrabold tabular-nums ${cfg.score}`}>
+                      className={`flex flex-col items-center gap-1 px-5 py-6 ${cfg.podiumCls}`}>
+                      <span className="text-2xl">{cfg.medal}</span>
+                      <p className="mt-1 text-xs uppercase tracking-wider text-text-faint">Rank {entry.rank}</p>
+                      <p className="text-sm font-semibold text-text-primary text-center leading-tight">{entry.teamName}</p>
+                      <p className="text-xs text-text-muted text-center truncate w-full px-2">{entry.projectName}</p>
+                      <p className={`mt-2 text-lg font-semibold tabular-nums ${cfg.scoreCls}`}>
                         {entry.averageScore.toFixed(2)}
-                        <span className="text-xs font-normal text-slate-500"> / 70</span>
+                        <span className="text-xs font-normal text-text-faint"> / 70</span>
                       </p>
                     </div>
                   );
@@ -150,61 +138,53 @@ export default function Leaderboard() {
             )}
 
             {/* Full ranked table */}
-            <table className="w-full text-sm text-left">
-              <thead className="bg-white/5 text-xs uppercase tracking-wide text-slate-500">
-                <tr>
-                  <th className="px-6 py-3 w-16">Rank</th>
-                  <th className="px-6 py-3">Team</th>
-                  <th className="px-6 py-3 hidden sm:table-cell">Project</th>
-                  <th className="px-6 py-3 text-right">Avg Score</th>
-                  <th className="px-6 py-3 text-right hidden md:table-cell">Reviews</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {entries.map((entry) => {
-                  const cfg = getRankConfig(entry.rank);
-                  return (
-                    <tr
-                      key={entry.submissionId}
-                      className={`hover:bg-white/5 transition ${entry.rank <= 3 ? cfg.row.split(' ').filter(c => c.startsWith('border-l')).join(' ') : ''}`}
-                    >
-                      {/* Rank */}
-                      <td className="px-6 py-4">
-                        <span className={`text-base tabular-nums ${cfg.rank}`}>
-                          {cfg.medal ?? `#${entry.rank}`}
-                        </span>
-                      </td>
-
-                      {/* Team */}
-                      <td className="px-6 py-4">
-                        <p className="font-semibold text-white">{entry.teamName}</p>
-                        <p className="text-xs text-slate-500 sm:hidden">{entry.projectName}</p>
-                      </td>
-
-                      {/* Project (hidden on mobile — shown in team cell) */}
-                      <td className="px-6 py-4 hidden sm:table-cell text-slate-300">
-                        {entry.projectName}
-                      </td>
-
-                      {/* Score */}
-                      <td className={`px-6 py-4 text-right font-bold tabular-nums ${cfg.score}`}>
-                        {entry.averageScore.toFixed(2)}
-                        <span className="text-xs font-normal text-slate-500"> / 70</span>
-                      </td>
-
-                      {/* Review count */}
-                      <td className="px-6 py-4 text-right text-slate-500 hidden md:table-cell">
-                        {entry.reviewCount} {entry.reviewCount === 1 ? 'review' : 'reviews'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <div className="border-t border-border">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-elevated text-xs uppercase tracking-wide text-text-faint">
+                  <tr>
+                    <th className="px-5 py-3 w-16">Rank</th>
+                    <th className="px-5 py-3">Team</th>
+                    <th className="px-5 py-3 hidden sm:table-cell">Project</th>
+                    <th className="px-5 py-3 text-right">Avg Score</th>
+                    <th className="px-5 py-3 text-right hidden md:table-cell">Reviews</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {entries.map((entry) => {
+                    const cfg = getRankConfig(entry.rank);
+                    return (
+                      <tr
+                        key={entry.submissionId}
+                        className="hover:bg-elevated transition-colors"
+                      >
+                        <td className="px-5 py-3.5">
+                          <span className={`tabular-nums text-sm ${cfg.rankCls}`}>
+                            {cfg.medal ?? `#${entry.rank}`}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <p className="font-medium text-text-primary">{entry.teamName}</p>
+                          <p className="text-xs text-text-faint sm:hidden">{entry.projectName}</p>
+                        </td>
+                        <td className="px-5 py-3.5 hidden sm:table-cell text-text-muted text-sm">
+                          {entry.projectName}
+                        </td>
+                        <td className={`px-5 py-3.5 text-right font-semibold tabular-nums ${cfg.scoreCls}`}>
+                          {entry.averageScore.toFixed(2)}
+                          <span className="text-xs font-normal text-text-faint"> / 70</span>
+                        </td>
+                        <td className="px-5 py-3.5 text-right text-text-faint hidden md:table-cell">
+                          {entry.reviewCount} {entry.reviewCount === 1 ? 'review' : 'reviews'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
-
-      </div>
+      </main>
     </div>
   );
 }

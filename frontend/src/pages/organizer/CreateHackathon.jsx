@@ -2,18 +2,17 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const inputBase =
-  'w-full rounded-lg border bg-white/5 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:ring-2 focus:ring-purple-500';
-const inputNormal  = `${inputBase} border-white/10 focus:border-purple-500/50`;
-const inputError   = `${inputBase} border-red-500/70`;
-const labelClass   = 'mb-1.5 block text-sm font-medium text-slate-300';
+// ── Field primitives ──────────────────────────────────────────────────────────
+const inputBase = 'w-full rounded-lg border bg-elevated px-4 py-2.5 text-sm text-text-primary placeholder-text-faint outline-none focus:ring-1 focus:ring-accent transition-colors';
+const inputNormal = `${inputBase} border-border focus:border-accent`;
+const inputError  = `${inputBase} border-red-500`;
+const labelCls   = 'mb-1.5 block text-sm font-medium text-text-muted';
 
 function Field({ label, required, error, children }) {
   return (
     <div>
-      <label className={labelClass}>
-        {label}{required && <span className="ml-0.5 text-pink-400">*</span>}
+      <label className={labelCls}>
+        {label}{required && <span className="ml-0.5 text-red-400">*</span>}
       </label>
       {children}
       {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
@@ -21,15 +20,20 @@ function Field({ label, required, error, children }) {
   );
 }
 
-function SectionTitle({ children }) {
+function SectionDivider({ children }) {
   return (
-    <h2 className="mt-8 mb-4 text-xs font-semibold uppercase tracking-widest text-slate-500 border-b border-white/8 pb-2">
-      {children}
-    </h2>
+    <div className="relative my-2">
+      <div className="absolute inset-0 flex items-center">
+        <div className="w-full border-t border-border" />
+      </div>
+      <div className="relative flex justify-start">
+        <span className="bg-surface pr-3 text-xs font-semibold uppercase tracking-wider text-text-faint">{children}</span>
+      </div>
+    </div>
   );
 }
 
-function Spinner() {
+function InlineSpinner() {
   return (
     <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -43,39 +47,28 @@ export default function CreateHackathon() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    title: '',
-    description: '',
-    theme: '',
-    mode: '',
-    venue: '',
-    startDate: '',
-    endDate: '',
-    registrationDeadline: '',
-    bannerImage: '',
-    prizePool: '',
-    maxTeamSize: '4',
-    rules: '',
-    judgingCriteria: '',
+    title: '', description: '', theme: '', mode: '', venue: '',
+    startDate: '', endDate: '', registrationDeadline: '',
+    bannerImage: '', prizePool: '', maxTeamSize: '4',
+    rules: '', judgingCriteria: '',
   });
 
-  const [errors, setErrors]           = useState({});
+  const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
-  const [loading, setLoading]         = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // ── Field helpers ──────────────────────────────────────────────────────────
   const set = (key) => (e) => {
     setForm((f) => ({ ...f, [key]: e.target.value }));
     setErrors((er) => ({ ...er, [key]: '' }));
   };
 
-  // ── Validation ──────────────────────────────────────────────────────────────
   const validate = () => {
     const errs = {};
-    if (!form.title.trim())                   errs.title = 'Title is required.';
-    if (!form.description.trim())             errs.description = 'Description is required.';
-    if (!form.startDate)                      errs.startDate = 'Start date is required.';
-    if (!form.endDate)                        errs.endDate = 'End date is required.';
-    if (!form.registrationDeadline)           errs.registrationDeadline = 'Registration deadline is required.';
+    if (!form.title.trim())             errs.title = 'Title is required.';
+    if (!form.description.trim())       errs.description = 'Description is required.';
+    if (!form.startDate)                errs.startDate = 'Start date is required.';
+    if (!form.endDate)                  errs.endDate = 'End date is required.';
+    if (!form.registrationDeadline)     errs.registrationDeadline = 'Registration deadline is required.';
     if (form.startDate && form.endDate && new Date(form.endDate) <= new Date(form.startDate))
       errs.endDate = 'End date must be after start date.';
     if (form.registrationDeadline && form.startDate && new Date(form.registrationDeadline) > new Date(form.startDate))
@@ -85,7 +78,6 @@ export default function CreateHackathon() {
     return errs;
   };
 
-  // ── Submit ──────────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError('');
@@ -120,43 +112,35 @@ export default function CreateHackathon() {
     }
   };
 
-  // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 px-4 py-12">
-      <div className="mx-auto max-w-2xl">
+    <div className="min-h-screen bg-base">
+      {/* Header */}
+      <header className="sticky top-0 z-10 border-b border-border bg-base/95 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
+          <Link to="/organizer/dashboard" className="text-sm text-text-muted hover:text-text-primary transition-colors">
+            ← Dashboard
+          </Link>
+          <span className="text-sm font-semibold text-text-primary">HeckNest</span>
+        </div>
+      </header>
 
-        {/* Back */}
-        <Link
-          to="/organizer/dashboard"
-          className="mb-6 inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-purple-300 transition"
-        >
-          ← Back to Dashboard
-        </Link>
-
-        {/* Header */}
-        <div className="mb-8">
-          <span className="inline-flex items-center gap-2 rounded-full bg-purple-500/20 px-4 py-1.5 text-sm font-medium text-purple-300 ring-1 ring-purple-500/40">
-            🚀 HeckNest
-          </span>
-          <h1 className="mt-5 text-3xl font-extrabold text-white">Create a Hackathon</h1>
-          <p className="mt-1 text-sm text-slate-400">Fill in the details below to launch your event.</p>
+      <main className="mx-auto max-w-2xl px-6 py-8">
+        <div className="mb-6">
+          <h1 className="text-xl font-semibold text-text-primary">Create Hackathon</h1>
+          <p className="mt-1 text-sm text-text-muted">Fill in the details to launch your event.</p>
         </div>
 
-        {/* Card */}
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+        {/* Server error */}
+        {serverError && (
+          <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            <span className="shrink-0">⚠</span><span>{serverError}</span>
+          </div>
+        )}
 
-          {/* Server error */}
-          {serverError && (
-            <div className="mb-6 flex items-start gap-3 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              <span className="mt-0.5">⚠️</span>
-              <span>{serverError}</span>
-            </div>
-          )}
-
+        <div className="rounded-xl border border-border bg-surface p-6">
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
 
-            {/* ─ Basic info ─────────────────────────────────────────────────── */}
-            <SectionTitle>Basic Info</SectionTitle>
+            <SectionDivider>Basic Info</SectionDivider>
 
             <Field label="Title" required error={errors.title}>
               <input id="title" type="text" placeholder="e.g. CodeSprint 2025"
@@ -179,10 +163,10 @@ export default function CreateHackathon() {
 
               <Field label="Mode" error={errors.mode}>
                 <select id="mode" value={form.mode} onChange={set('mode')}
-                  className={`${errors.mode ? inputError : inputNormal} bg-slate-800`}>
+                  className={`${errors.mode ? inputError : inputNormal} bg-elevated`}>
                   <option value="">Select mode…</option>
-                  <option value="online">🌐 Online</option>
-                  <option value="offline">📍 Offline</option>
+                  <option value="online">Online</option>
+                  <option value="offline">Offline</option>
                 </select>
               </Field>
             </div>
@@ -193,31 +177,29 @@ export default function CreateHackathon() {
                 className={errors.venue ? inputError : inputNormal} />
             </Field>
 
-            {/* ─ Dates ──────────────────────────────────────────────────────── */}
-            <SectionTitle>Dates</SectionTitle>
+            <SectionDivider>Dates</SectionDivider>
 
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Start Date" required error={errors.startDate}>
                 <input id="startDate" type="date"
                   value={form.startDate} onChange={set('startDate')}
-                  className={`${errors.startDate ? inputError : inputNormal} [color-scheme:dark]`} />
+                  className={errors.startDate ? inputError : inputNormal} />
               </Field>
 
               <Field label="End Date" required error={errors.endDate}>
                 <input id="endDate" type="date"
                   value={form.endDate} onChange={set('endDate')}
-                  className={`${errors.endDate ? inputError : inputNormal} [color-scheme:dark]`} />
+                  className={errors.endDate ? inputError : inputNormal} />
               </Field>
 
-              <Field label="Registration Deadline" required error={errors.registrationDeadline}>
+              <Field label="Reg. Deadline" required error={errors.registrationDeadline}>
                 <input id="registrationDeadline" type="date"
                   value={form.registrationDeadline} onChange={set('registrationDeadline')}
-                  className={`${errors.registrationDeadline ? inputError : inputNormal} [color-scheme:dark]`} />
+                  className={errors.registrationDeadline ? inputError : inputNormal} />
               </Field>
             </div>
 
-            {/* ─ Details ────────────────────────────────────────────────────── */}
-            <SectionTitle>Additional Details</SectionTitle>
+            <SectionDivider>Additional Details</SectionDivider>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Prize Pool" error={errors.prizePool}>
@@ -247,31 +229,26 @@ export default function CreateHackathon() {
 
             <Field label="Judging Criteria" error={errors.judgingCriteria}>
               <input id="judgingCriteria" type="text"
-                placeholder="e.g. Innovation, Feasibility, Presentation (comma-separated)"
+                placeholder="Innovation, Feasibility, Presentation (comma-separated)"
                 value={form.judgingCriteria} onChange={set('judgingCriteria')}
                 className={errors.judgingCriteria ? inputError : inputNormal} />
-              <p className="mt-1 text-xs text-slate-500">Separate each criterion with a comma.</p>
+              <p className="mt-1 text-xs text-text-faint">Separate each criterion with a comma.</p>
             </Field>
 
-            {/* ─ Submit ─────────────────────────────────────────────────────── */}
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 w-full rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-3 text-sm font-semibold
-                text-white shadow-lg transition hover:from-purple-500 hover:to-pink-500 active:scale-95
-                disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-1 w-full rounded-lg bg-accent hover:bg-accent-hover px-4 py-2.5 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <Spinner /> Creating…
+                  <InlineSpinner /> Creating…
                 </span>
-              ) : (
-                '🚀 Create Hackathon'
-              )}
+              ) : 'Create Hackathon'}
             </button>
           </form>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

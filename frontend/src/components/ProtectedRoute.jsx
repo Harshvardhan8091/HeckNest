@@ -16,8 +16,8 @@ export default function ProtectedRoute({ children, roles, redirectTo = '/login' 
   // While restoring session from localStorage, show nothing (avoids flash)
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <svg className="h-8 w-8 animate-spin text-purple-400" viewBox="0 0 24 24" fill="none">
+      <div className="min-h-screen bg-base flex items-center justify-center">
+        <svg className="h-8 w-8 animate-spin text-accent" viewBox="0 0 24 24" fill="none">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
         </svg>

@@ -2,28 +2,29 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import api from '../../services/api';
 
+function InlineSpinner() {
+  return (
+    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+    </svg>
+  );
+}
+
 export default function CreateTeam() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const hackathonId = searchParams.get('hackathonId') ?? '';
 
   const [name, setName] = useState('');
-  const [nameErr, setNameErr] = useState('');
+  const [nameError, setNameError] = useState('');
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const validate = () => {
-    if (!name.trim()) { setNameErr('Team name is required.'); return false; }
-    if (!hackathonId) { setServerError('No hackathon selected. Go back and choose a hackathon first.'); return false; }
-    return true;
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError('');
-    setNameErr('');
-    if (!validate()) return;
-
+    if (!name.trim()) { setNameError('Team name is required.'); return; }
     setLoading(true);
     try {
       const { data } = await api.post('/teams', { name: name.trim(), hackathon: hackathonId });
@@ -36,83 +37,62 @@ export default function CreateTeam() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-base flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
 
-        {/* Brand */}
-        <div className="mb-8 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-purple-500/20 px-4 py-1.5 text-sm font-medium text-purple-300 ring-1 ring-purple-500/40">
-            👥 HeckNest
-          </span>
-          <h1 className="mt-5 text-3xl font-extrabold text-white">Create Your Team</h1>
-          <p className="mt-1 text-sm text-slate-400">
-            {hackathonId
-              ? 'Name your team and get started.'
-              : 'Browse hackathons first to select one.'}
-          </p>
+        {/* Back */}
+        <Link
+          to="/participant/dashboard"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary transition-colors"
+        >
+          ← Dashboard
+        </Link>
+
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-xl font-semibold text-text-primary">Create a Team</h1>
+          <p className="mt-1 text-sm text-text-muted">Give your team a name to get started.</p>
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+        <div className="rounded-xl border border-border bg-surface p-6">
 
           {serverError && (
-            <div className="mb-5 flex items-start gap-3 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              <span className="mt-0.5">⚠️</span>
+            <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              <span className="shrink-0 mt-0.5">⚠</span>
               <span>{serverError}</span>
             </div>
           )}
 
-          {!hackathonId && (
-            <div className="mb-5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
-              ⚠️ No hackathon ID found in URL. Please{' '}
-              <Link to="/hackathons" className="underline hover:text-amber-200">browse hackathons</Link>
-              {' '}and click &quot;Register / Create Team&quot; from a hackathon page.
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} noValidate className="space-y-5">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div>
-              <label htmlFor="teamName" className="mb-1.5 block text-sm font-medium text-slate-300">
-                Team Name
+              <label htmlFor="teamName" className="mb-1.5 block text-sm font-medium text-text-muted">
+                Team name <span className="text-red-400">*</span>
               </label>
               <input
                 id="teamName"
                 type="text"
-                placeholder="e.g. Ctrl+Alt+Defeat"
                 value={name}
-                onChange={(e) => { setName(e.target.value); setNameErr(''); }}
-                className={`w-full rounded-lg border bg-white/5 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition
-                  focus:ring-2 focus:ring-purple-500
-                  ${nameErr ? 'border-red-500/70' : 'border-white/10 focus:border-purple-500/50'}`}
+                onChange={(e) => { setName(e.target.value); setNameError(''); }}
+                placeholder="e.g. Binary Beavers"
+                className={`w-full rounded-lg border bg-elevated px-4 py-2.5 text-sm text-text-primary placeholder-text-faint outline-none focus:ring-1 focus:ring-accent transition-colors
+                  ${nameError ? 'border-red-500' : 'border-border focus:border-accent'}`}
               />
-              {nameErr && <p className="mt-1 text-xs text-red-400">{nameErr}</p>}
+              {nameError && <p className="mt-1 text-xs text-red-400">{nameError}</p>}
             </div>
 
             <button
               type="submit"
-              disabled={loading || !hackathonId}
-              className="w-full rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition
-                hover:from-purple-500 hover:to-pink-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={loading}
+              className="w-full rounded-lg bg-accent hover:bg-accent-hover px-4 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-                  </svg>
-                  Creating…
+                  <InlineSpinner /> Creating…
                 </span>
-              ) : (
-                '👥 Create Team'
-              )}
+              ) : 'Create Team'}
             </button>
           </form>
-
-          <p className="mt-5 text-center text-sm text-slate-500">
-            <Link to="/participant/dashboard" className="text-purple-400 hover:text-purple-300 transition">
-              ← Back to Dashboard
-            </Link>
-          </p>
         </div>
       </div>
     </div>

@@ -5,32 +5,27 @@ import api from '../../services/api';
 
 // ── Score fields config ───────────────────────────────────────────────────────
 const SCORE_FIELDS = [
-  { key: 'innovation',           label: 'Innovation',            icon: '💡' },
-  { key: 'technicalComplexity',  label: 'Technical Complexity',  icon: '⚙️' },
-  { key: 'userInterface',        label: 'User Interface',         icon: '🎨' },
-  { key: 'functionality',        label: 'Functionality',          icon: '✅' },
-  { key: 'scalability',          label: 'Scalability',            icon: '📈' },
-  { key: 'documentation',        label: 'Documentation',          icon: '📄' },
-  { key: 'presentation',         label: 'Presentation',           icon: '🎤' },
+  { key: 'innovation',          label: 'Innovation'           },
+  { key: 'technicalComplexity', label: 'Technical Complexity' },
+  { key: 'userInterface',       label: 'User Interface'       },
+  { key: 'functionality',       label: 'Functionality'        },
+  { key: 'scalability',         label: 'Scalability'          },
+  { key: 'documentation',       label: 'Documentation'        },
+  { key: 'presentation',        label: 'Presentation'         },
 ];
 
 const EMPTY_SCORES = Object.fromEntries(SCORE_FIELDS.map(({ key }) => [key, 0]));
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 const fmt = (iso) =>
-  iso
-    ? new Date(iso).toLocaleDateString('en-IN', {
-        day: 'numeric', month: 'short', year: 'numeric',
-      })
-    : '—';
+  iso ? new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
 const calcTotal = (scores) =>
   SCORE_FIELDS.reduce((sum, { key }) => sum + (Number(scores[key]) || 0), 0);
 
 function Spinner() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900">
-      <svg className="h-10 w-10 animate-spin text-purple-400" viewBox="0 0 24 24" fill="none">
+    <div className="flex min-h-screen items-center justify-center bg-base">
+      <svg className="h-8 w-8 animate-spin text-accent" viewBox="0 0 24 24" fill="none">
         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
       </svg>
@@ -47,44 +42,36 @@ function InlineSpinner() {
   );
 }
 
-// ── Score slider row ──────────────────────────────────────────────────────────
-function ScoreInput({ icon, label, fieldKey, value, onChange }) {
+// ── Score row ─────────────────────────────────────────────────────────────────
+function ScoreInput({ label, fieldKey, value, onChange }) {
   const pct = (value / 10) * 100;
+  const colorCls = value >= 8 ? 'text-emerald-400' : value >= 5 ? 'text-accent' : value >= 3 ? 'text-amber-400' : 'text-text-faint';
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="flex items-center gap-1.5 text-sm font-medium text-slate-300">
-          <span>{icon}</span>{label}
-        </label>
-        <span className={`tabular-nums text-sm font-bold ${
-          value >= 8 ? 'text-emerald-400' :
-          value >= 5 ? 'text-purple-400' :
-          value >= 3 ? 'text-amber-400' : 'text-slate-500'
-        }`}>
-          {value}<span className="text-xs text-slate-500 font-normal">/10</span>
+        <label className="text-sm text-text-muted">{label}</label>
+        <span className={`tabular-nums text-sm font-semibold ${colorCls}`}>
+          {value}<span className="text-xs font-normal text-text-faint">/10</span>
         </span>
       </div>
 
-      {/* Visual score bar + number input */}
       <div className="flex items-center gap-3">
-        <div className="relative flex-1 h-2 rounded-full bg-white/10">
+        <div className="relative flex-1 h-1.5 rounded-full bg-elevated">
           <div
-            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-violet-500 to-purple-400 transition-all"
+            className="absolute inset-y-0 left-0 rounded-full bg-accent transition-all"
             style={{ width: `${pct}%` }}
           />
         </div>
         <input
           type="number"
-          min="0"
-          max="10"
-          step="1"
+          min="0" max="10" step="1"
           value={value}
           onChange={(e) => {
             const v = Math.min(10, Math.max(0, Number(e.target.value)));
             onChange(fieldKey, isNaN(v) ? 0 : v);
           }}
-          className="w-14 rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-center text-sm text-white
-            outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 transition"
+          className="w-14 rounded-lg border border-border bg-elevated px-2 py-1 text-center text-sm text-text-primary outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-colors"
         />
       </div>
     </div>
@@ -96,34 +83,24 @@ export default function ReviewSubmission() {
   const { submissionId } = useParams();
   const { user } = useAuth();
 
-  // Submission data
-  const [submission,   setSubmission]   = useState(null);
-  // Existing review (if already reviewed by this judge)
+  const [submission,     setSubmission]     = useState(null);
   const [existingReview, setExistingReview] = useState(null);
+  const [scores,         setScores]         = useState(EMPTY_SCORES);
+  const [comments,       setComments]       = useState('');
+  const [loading,        setLoading]        = useState(true);
+  const [saving,         setSaving]         = useState(false);
+  const [error,          setError]          = useState('');
+  const [success,        setSuccess]        = useState(false);
 
-  // Form state
-  const [scores,   setScores]   = useState(EMPTY_SCORES);
-  const [comments, setComments] = useState('');
-
-  // UI state
-  const [loading,  setLoading]  = useState(true);
-  const [saving,   setSaving]   = useState(false);
-  const [error,    setError]    = useState('');
-  const [success,  setSuccess]  = useState(false);
-
-  // ── Fetch submission + own review ─────────────────────────────────────────
   const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      // Fetch submission details
       const { data: sub } = await api.get(`/submissions/${submissionId}`);
       setSubmission(sub);
 
-      // Try fetching our own review (returns [review] or 404 if none)
       try {
         const { data: reviews } = await api.get(`/reviews/submission/${submissionId}`);
-        // Backend returns array; judge only sees their own
         const mine = Array.isArray(reviews)
           ? reviews.find((r) => {
               const judgeId = r.judge?._id ?? r.judge;
@@ -136,7 +113,7 @@ export default function ReviewSubmission() {
           setComments(mine.comments ?? '');
         }
       } catch {
-        // 404 = no review yet — that's fine, leave form blank
+        // 404 = no review yet
       }
     } catch (err) {
       setError(err.response?.data?.message ?? 'Failed to load submission.');
@@ -147,15 +124,12 @@ export default function ReviewSubmission() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // ── Score change handler ──────────────────────────────────────────────────
   const handleScoreChange = (key, val) => {
     setScores((prev) => ({ ...prev, [key]: val }));
   };
 
-  // ── Submit / Update ───────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Validate: at least one score must be > 0
     const allZero = SCORE_FIELDS.every(({ key }) => (scores[key] ?? 0) === 0);
     if (allZero) {
       setError('Please score at least one criterion before submitting.');
@@ -165,10 +139,8 @@ export default function ReviewSubmission() {
     setError('');
     try {
       if (existingReview) {
-        // UPDATE existing review
         await api.put(`/reviews/${existingReview._id}`, { scores, comments });
       } else {
-        // CREATE new review
         await api.post('/reviews', { submissionId, scores, comments });
       }
       setSuccess(true);
@@ -184,40 +156,34 @@ export default function ReviewSubmission() {
 
   if (error && !submission) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 flex flex-col items-center justify-center gap-4 px-4">
-        <span className="text-5xl">😕</span>
-        <h1 className="text-2xl font-bold text-white">Submission Not Found</h1>
-        <p className="text-sm text-slate-400">{error}</p>
-        <Link to="/judge/dashboard"
-          className="mt-2 rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 hover:border-purple-500/50 hover:text-white transition">
+      <div className="min-h-screen bg-base flex flex-col items-center justify-center gap-3 px-4">
+        <p className="text-sm text-text-muted">{error}</p>
+        <Link to="/judge/dashboard" className="text-sm text-accent hover:text-accent-hover transition-colors">
           ← Back to Dashboard
         </Link>
       </div>
     );
   }
 
-  const sub = submission;
+  const sub   = submission;
   const total = calcTotal(scores);
 
-  // ── Success screen ────────────────────────────────────────────────────────
+  // Success screen
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 flex flex-col items-center justify-center gap-6 px-4 text-center">
-        <div className="rounded-full bg-emerald-500/20 p-6 ring-2 ring-emerald-500/40">
-          <span className="text-5xl">✓</span>
+      <div className="min-h-screen bg-base flex flex-col items-center justify-center gap-5 px-4 text-center">
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-5">
+          <p className="text-2xl font-semibold text-emerald-400">
+            {existingReview ? 'Review Updated' : 'Review Submitted'}
+          </p>
+          <p className="mt-2 text-sm text-text-muted max-w-xs">
+            Your review for <span className="text-text-primary font-medium">{sub?.projectName}</span> was recorded
+            with a total score of <span className="text-accent font-semibold">{total} / 70</span>.
+          </p>
         </div>
-        <h1 className="text-3xl font-extrabold text-white">
-          {existingReview ? 'Review Updated!' : 'Review Submitted!'}
-        </h1>
-        <p className="max-w-sm text-sm text-slate-400">
-          Your review for <span className="text-white font-medium">{sub?.projectName}</span> has been{' '}
-          {existingReview ? 'updated' : 'recorded'} with a total score of{' '}
-          <span className="text-purple-300 font-bold">{total} / 70</span>.
-        </p>
         <Link
           to="/judge/dashboard"
-          className="mt-2 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-3
-            text-sm font-semibold text-white shadow-lg hover:from-violet-500 hover:to-purple-500 transition"
+          className="rounded-lg bg-accent hover:bg-accent-hover px-5 py-2 text-sm font-medium text-white transition-colors"
         >
           ← Back to Dashboard
         </Link>
@@ -225,85 +191,77 @@ export default function ReviewSubmission() {
     );
   }
 
-  // ── Main render ───────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 px-4 py-12">
-      <div className="mx-auto max-w-3xl">
+    <div className="min-h-screen bg-base">
+      {/* Header */}
+      <header className="sticky top-0 z-10 border-b border-border bg-base/95 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
+          <Link to="/judge/dashboard" className="text-sm text-text-muted hover:text-text-primary transition-colors">
+            ← Dashboard
+          </Link>
+          <span className="text-sm font-semibold text-text-primary">HeckNest</span>
+        </div>
+      </header>
 
-        {/* Back */}
-        <Link
-          to="/judge/dashboard"
-          className="mb-6 inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-purple-300 transition"
-        >
-          ← Dashboard
-        </Link>
+      <main className="mx-auto max-w-3xl px-6 py-8 space-y-5">
 
-        {/* ── Submission details card ─────────────────────────────────────── */}
-        <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+        {/* Already-reviewed badge */}
+        {existingReview && (
+          <span className="inline-flex rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
+            Editing existing review
+          </span>
+        )}
 
-          {/* Status badge */}
-          {existingReview && (
-            <span className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-500/30">
-              ✓ Already Reviewed — editing your score
-            </span>
-          )}
-
-          <h1 className="text-2xl font-extrabold text-white mb-1">{sub.projectName}</h1>
-
-          <div className="mt-2 flex flex-wrap gap-4 text-xs text-slate-400">
-            {sub.team?.name && (
-              <span>👥 <span className="text-slate-300">{sub.team.name}</span></span>
-            )}
-            {sub.hackathon?.title && (
-              <span>🏆 <span className="text-slate-300">{sub.hackathon.title}</span></span>
-            )}
-            <span>📅 Submitted {fmt(sub.createdAt)}</span>
+        {/* Submission details */}
+        <div className="rounded-xl border border-border bg-surface p-6">
+          <h1 className="text-xl font-semibold text-text-primary">{sub.projectName}</h1>
+          <div className="mt-2 flex flex-wrap gap-4 text-xs text-text-muted">
+            {sub.team?.name && <span>Team: {sub.team.name}</span>}
+            {sub.hackathon?.title && <span>{sub.hackathon.title}</span>}
+            <span>Submitted {fmt(sub.createdAt)}</span>
           </div>
 
-          <div className="mt-6 space-y-4 text-sm">
+          <div className="mt-5 space-y-4 text-sm">
             {sub.problemStatement && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Problem Statement</p>
-                <p className="text-slate-300 leading-relaxed">{sub.problemStatement}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-text-faint mb-1">Problem Statement</p>
+                <p className="text-text-muted leading-relaxed">{sub.problemStatement}</p>
               </div>
             )}
             {sub.solutionDescription && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Solution</p>
-                <p className="text-slate-300 leading-relaxed">{sub.solutionDescription}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-text-faint mb-1">Solution</p>
+                <p className="text-text-muted leading-relaxed">{sub.solutionDescription}</p>
               </div>
             )}
 
-            <div className="flex flex-wrap gap-4 pt-1">
+            <div className="flex flex-wrap gap-4">
               {sub.githubRepo && (
                 <a href={sub.githubRepo} target="_blank" rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-purple-400 hover:text-purple-300 underline underline-offset-2 transition">
-                  🔗 GitHub Repo
+                  className="text-accent hover:text-accent-hover underline underline-offset-2 text-sm transition-colors">
+                  GitHub Repo
                 </a>
               )}
               {sub.liveDemoUrl && (
                 <a href={sub.liveDemoUrl} target="_blank" rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-purple-400 hover:text-purple-300 underline underline-offset-2 transition">
-                  🌐 Live Demo
+                  className="text-accent hover:text-accent-hover underline underline-offset-2 text-sm transition-colors">
+                  Live Demo
                 </a>
               )}
               {sub.demoVideoLink && (
                 <a href={sub.demoVideoLink} target="_blank" rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-purple-400 hover:text-purple-300 underline underline-offset-2 transition">
-                  🎬 Demo Video
+                  className="text-accent hover:text-accent-hover underline underline-offset-2 text-sm transition-colors">
+                  Demo Video
                 </a>
               )}
             </div>
 
             {sub.techStack?.length > 0 && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Tech Stack</p>
-                <div className="flex flex-wrap gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-text-faint mb-2">Tech Stack</p>
+                <div className="flex flex-wrap gap-1.5">
                   {sub.techStack.map((t, i) => (
-                    <span key={i}
-                      className="rounded-full bg-purple-500/15 px-2.5 py-0.5 text-xs text-purple-300 ring-1 ring-purple-500/30">
-                      {t}
-                    </span>
+                    <span key={i} className="rounded-md border border-border bg-elevated px-2 py-0.5 text-xs text-text-muted">{t}</span>
                   ))}
                 </div>
               </div>
@@ -311,35 +269,33 @@ export default function ReviewSubmission() {
           </div>
         </div>
 
-        {/* ── Scoring form ────────────────────────────────────────────────── */}
+        {/* Scoring form */}
         <form onSubmit={handleSubmit} noValidate>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
-
-            {/* Header row with live total */}
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-white">Score this Submission</h2>
+          <div className="rounded-xl border border-border bg-surface p-6">
+            {/* Score header */}
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-text-primary">Score this Submission</h2>
               <div className="text-right">
-                <p className="text-2xl font-extrabold text-purple-300 tabular-nums">{total}</p>
-                <p className="text-xs text-slate-500">/ 70 total</p>
+                <p className="text-xl font-semibold text-accent tabular-nums">{total}</p>
+                <p className="text-xs text-text-faint">/ 70 total</p>
               </div>
             </div>
 
             {/* Total progress bar */}
-            <div className="mb-8 h-2 w-full rounded-full bg-white/10 overflow-hidden">
+            <div className="mb-6 h-1.5 w-full rounded-full bg-elevated overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 transition-all duration-300"
+                className="h-full rounded-full bg-accent transition-all duration-300"
                 style={{ width: `${(total / 70) * 100}%` }}
               />
             </div>
 
             {/* Score inputs */}
-            <div className="space-y-6">
-              {SCORE_FIELDS.map(({ key, label, icon }) => (
+            <div className="space-y-5">
+              {SCORE_FIELDS.map(({ key, label }) => (
                 <ScoreInput
                   key={key}
                   fieldKey={key}
                   label={label}
-                  icon={icon}
                   value={scores[key]}
                   onChange={handleScoreChange}
                 />
@@ -347,24 +303,23 @@ export default function ReviewSubmission() {
             </div>
 
             {/* Comments */}
-            <div className="mt-8">
-              <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                Comments <span className="text-slate-600 font-normal">(optional)</span>
+            <div className="mt-6">
+              <label className="mb-1.5 block text-sm font-medium text-text-muted">
+                Comments <span className="text-text-faint font-normal">(optional)</span>
               </label>
               <textarea
                 rows={4}
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
                 placeholder="Any notes or feedback for this project…"
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white
-                  placeholder-slate-500 outline-none resize-y focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 transition"
+                className="w-full rounded-lg border border-border bg-elevated px-4 py-2.5 text-sm text-text-primary placeholder-text-faint outline-none resize-y focus:ring-1 focus:ring-accent focus:border-accent transition-colors"
               />
             </div>
 
             {/* Error */}
             {error && (
-              <div className="mt-5 flex items-start gap-3 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                <span className="mt-0.5">⚠️</span><span>{error}</span>
+              <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                <span>⚠</span><span>{error}</span>
               </div>
             )}
 
@@ -372,23 +327,17 @@ export default function ReviewSubmission() {
             <button
               type="submit"
               disabled={saving}
-              className="mt-6 w-full rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-3 text-sm font-semibold
-                text-white shadow-lg transition hover:from-violet-500 hover:to-purple-500 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="mt-5 w-full rounded-lg bg-accent hover:bg-accent-hover px-4 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? (
                 <span className="flex items-center justify-center gap-2">
                   <InlineSpinner /> Saving…
                 </span>
-              ) : existingReview ? (
-                '💾 Update Review'
-              ) : (
-                '⚖️ Submit Review'
-              )}
+              ) : existingReview ? 'Update Review' : 'Submit Review'}
             </button>
           </div>
         </form>
-
-      </div>
+      </main>
     </div>
   );
 }

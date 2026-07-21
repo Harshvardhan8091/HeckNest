@@ -8,15 +8,15 @@ import UserPicker from '../components/UserPicker';
 const fmt = (iso) =>
   iso ? new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
-const STATUS_BADGE = {
-  pending:  'bg-amber-500/15 text-amber-300 ring-amber-500/30',
-  approved: 'bg-emerald-500/15 text-emerald-300 ring-emerald-500/30',
-  rejected: 'bg-red-500/15 text-red-300 ring-red-500/30',
+const STATUS_CLS = {
+  pending:  'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  approved: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  rejected: 'bg-red-500/10 text-red-400 border-red-500/20',
 };
 
 function Badge({ status }) {
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 capitalize ${STATUS_BADGE[status] ?? 'bg-slate-500/15 text-slate-300 ring-slate-500/30'}`}>
+    <span className={`inline-flex rounded-md border px-1.5 py-0.5 text-xs font-medium capitalize ${STATUS_CLS[status] ?? 'bg-elevated text-text-faint border-border'}`}>
       {status?.replace('_', ' ')}
     </span>
   );
@@ -24,12 +24,21 @@ function Badge({ status }) {
 
 function Spinner() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900">
-      <svg className="h-9 w-9 animate-spin text-purple-400" viewBox="0 0 24 24" fill="none">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+    <div className="flex min-h-screen items-center justify-center bg-base">
+      <svg className="h-8 w-8 animate-spin text-accent" viewBox="0 0 24 24" fill="none">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
       </svg>
     </div>
+  );
+}
+
+function InlineSpinner() {
+  return (
+    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+    </svg>
   );
 }
 
@@ -46,34 +55,26 @@ export default function TeamDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Add member form
   const [memberId, setMemberId] = useState('');
   const [memberErr, setMemberErr] = useState('');
   const [memberLoading, setMemberLoading] = useState(false);
 
-  // Registration action
   const [regLoading, setRegLoading] = useState(false);
   const [regError, setRegError] = useState('');
 
-  // Delete / Leave
   const [deleting, setDeleting] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [actionError, setActionError] = useState('');
 
-  // ── Fetch team ──────────────────────────────────────────────────────────────
   const loadTeam = async () => {
     setLoading(true);
     setError('');
     try {
       const { data } = await api.get(`/teams/${id}`);
       setTeam(data);
-
-      // After loading team, find registration for this team
       const regRes = await api.get('/registrations/my');
       const reg = regRes.data.find((r) => r.team?._id === data._id || r.team === data._id);
       setRegistration(reg ?? null);
-
-      // Find submission for this team
       const subRes = await api.get('/submissions/my');
       const sub = subRes.data.find((s) => s.team?._id === data._id || s.team === data._id);
       setSubmission(sub ?? null);
@@ -90,11 +91,9 @@ export default function TeamDetail() {
 
   if (error || !team) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 flex flex-col items-center justify-center gap-4 px-4">
-        <span className="text-5xl">😕</span>
-        <h1 className="text-2xl font-bold text-white">Team Not Found</h1>
-        <p className="text-sm text-slate-400">{error}</p>
-        <Link to="/participant/dashboard" className="text-sm text-purple-400 hover:text-purple-300 transition">
+      <div className="min-h-screen bg-base flex flex-col items-center justify-center gap-3 px-4">
+        <p className="text-sm text-text-muted">{error || 'Team not found.'}</p>
+        <Link to="/participant/dashboard" className="text-sm text-accent hover:text-accent-hover transition-colors">
           ← Back to Dashboard
         </Link>
       </div>
@@ -104,7 +103,6 @@ export default function TeamDetail() {
   const isLeader = team.leader?._id === user?._id || team.leader?._id?.toString() === user?._id?.toString();
   const hackathonId = team.hackathon?._id;
 
-  // ── Actions ─────────────────────────────────────────────────────────────────
   const handleAddMember = async (e) => {
     e.preventDefault();
     setMemberErr('');
@@ -160,184 +158,163 @@ export default function TeamDetail() {
     }
   };
 
-  // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 px-4 py-12">
-      <div className="mx-auto max-w-3xl">
+    <div className="min-h-screen bg-base">
+      {/* Header */}
+      <header className="sticky top-0 z-10 border-b border-border bg-base/95 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
+          <Link to="/participant/dashboard" className="text-sm text-text-muted hover:text-text-primary transition-colors">
+            ← Dashboard
+          </Link>
+          <span className="text-sm font-semibold text-text-primary">HeckNest</span>
+        </div>
+      </header>
 
-        <Link to="/participant/dashboard" className="mb-6 inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-purple-300 transition">
-          ← Dashboard
-        </Link>
+      <main className="mx-auto max-w-3xl px-6 py-8 space-y-5">
 
-        {/* Main card */}
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
-
-          {/* Header */}
-          <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+        {/* Team header card */}
+        <div className="rounded-xl border border-border bg-surface p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
             <div>
-              <h1 className="text-2xl font-extrabold text-white">{team.name}</h1>
-              <p className="text-sm text-slate-400 mt-0.5">
-                🏆 {team.hackathon?.title ?? 'Unknown Hackathon'}
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-semibold text-text-primary">{team.name}</h1>
+                {registration && <Badge status={registration.status} />}
+              </div>
+              <p className="mt-0.5 text-sm text-text-muted">
+                {team.hackathon?.title ?? 'Unknown Hackathon'}
               </p>
               {team.hackathon?.endDate && (
-                <p className="text-xs text-slate-500 mt-0.5">Ends {fmt(team.hackathon.endDate)}</p>
-              )}
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {registration ? (
-                <Badge status={registration.status} />
-              ) : (
-                <span className="text-xs text-slate-500">Not registered</span>
-              )}
-              {submission && (
-                <span className="text-xs text-slate-400">
-                  Submission: <Badge status={submission.status} />
-                </span>
+                <p className="text-xs text-text-faint mt-0.5">Ends {fmt(team.hackathon.endDate)}</p>
               )}
             </div>
           </div>
 
           {/* Members */}
-          <div className="mb-6">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
-              Members ({team.members?.length} / {team.hackathon?.maxTeamSize ?? '?'})
-            </h2>
-            <div className="space-y-2">
+          <div className="mt-5">
+            <p className="mb-2 text-xs font-medium text-text-faint">Members ({team.members?.length})</p>
+            <div className="flex flex-wrap gap-2">
               {team.members?.map((m) => {
-                const mId = m._id?.toString?.() ?? m._id;
-                const leaderId = team.leader?._id?.toString?.() ?? team.leader?._id;
+                const isLeaderMember = m._id === (team.leader?._id ?? team.leader);
                 return (
-                  <div key={mId} className="flex items-center justify-between rounded-lg border border-white/8 bg-white/3 px-4 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-purple-400"/>
-                      <div>
-                        <p className="text-sm font-medium text-white">{m.name}</p>
-                        <p className="text-xs text-slate-500">{m.email}</p>
-                      </div>
-                    </div>
-                    {mId === leaderId && (
-                      <span className="text-xs text-purple-300 bg-purple-500/15 ring-1 ring-purple-500/30 rounded-full px-2 py-0.5">
-                        👑 Leader
-                      </span>
+                  <span key={m._id} className="flex items-center gap-1.5 rounded-md border border-border bg-elevated px-2.5 py-1 text-xs text-text-muted">
+                    {m.name}
+                    {isLeaderMember && (
+                      <span className="rounded-sm bg-accent/15 px-1 text-[10px] text-accent">Leader</span>
                     )}
-                  </div>
+                  </span>
                 );
               })}
             </div>
           </div>
+        </div>
 
-          {/* Action error */}
-          {actionError && (
-            <div className="mb-4 flex items-start gap-3 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              <span>⚠️</span><span>{actionError}</span>
-            </div>
-          )}
+        {/* Leader-only controls */}
+        {isLeader && (
+          <div className="space-y-4">
 
-          {/* ── Leader-only section ─────────────────────────────────────────── */}
-          {isLeader && (
-            <div className="space-y-6">
-
-              {/* Add member */}
-              <div className="rounded-xl border border-white/10 bg-white/3 p-5">
-                <h3 className="text-sm font-semibold text-slate-300 mb-3">➕ Add Member</h3>
-                <form onSubmit={handleAddMember} className="flex gap-2">
-                  <UserPicker
-                    placeholder="Search user to add..."
-                    value={memberId}
-                    onChange={(val) => { setMemberId(val); setMemberErr(''); }}
-                  />
-                  <button
-                    type="submit"
-                    disabled={memberLoading}
-                    className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-500 transition disabled:opacity-60"
-                  >
-                    {memberLoading ? '…' : 'Add'}
-                  </button>
-                </form>
-                {memberErr && <p className="mt-2 text-xs text-red-400">{memberErr}</p>}
-              </div>
-
-              {/* Register for hackathon */}
-              {!registration && (
-                <div className="rounded-xl border border-white/10 bg-white/3 p-5">
-                  <h3 className="text-sm font-semibold text-slate-300 mb-1">📝 Register for Hackathon</h3>
-                  <p className="text-xs text-slate-500 mb-3">Your team is not yet registered. Register to be eligible for submission.</p>
-                  {regError && <p className="mb-2 text-xs text-red-400">⚠️ {regError}</p>}
-                  <button
-                    onClick={handleRegister}
-                    disabled={regLoading || !hackathonId}
-                    className="rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2 text-sm font-semibold text-white hover:from-purple-500 hover:to-pink-500 transition disabled:opacity-60 active:scale-95"
-                  >
-                    {regLoading ? 'Registering…' : '📝 Register Team'}
-                  </button>
-                </div>
-              )}
-
-              {/* Submit project (approved only) */}
-              {registration?.status === 'approved' && !submission && (
-                <Link
-                  to={`/submissions/create?teamId=${id}&hackathonId=${hackathonId}`}
-                  className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 hover:bg-emerald-500/15 transition"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-emerald-300">🚀 Submit Your Project</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Registration approved — you&apos;re ready to submit!</p>
-                  </div>
-                  <span className="text-emerald-400">→</span>
-                </Link>
-              )}
-
-              {/* Action error */}
-              {actionError && (
-                <div className="flex items-start gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                  <span className="mt-0.5">⚠️</span><span>{actionError}</span>
-                </div>
-              )}
-
-              {/* Delete team */}
-              <div className="pt-2 border-t border-white/8">
+            {/* Add member */}
+            <div className="rounded-xl border border-border bg-surface p-5">
+              <h2 className="mb-3 text-sm font-medium text-text-primary">Add Member</h2>
+              <form onSubmit={handleAddMember} className="flex gap-2">
+                <UserPicker
+                  placeholder="Search user to add..."
+                  value={memberId}
+                  onChange={(val) => { setMemberId(val); setMemberErr(''); }}
+                />
                 <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="rounded-lg border border-red-500/30 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:border-red-500/50 transition disabled:opacity-60"
+                  type="submit"
+                  disabled={memberLoading}
+                  className="shrink-0 rounded-lg bg-accent hover:bg-accent-hover px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50"
                 >
-                  {deleting ? 'Deleting…' : '🗑️ Delete Team'}
+                  {memberLoading ? '…' : 'Add'}
+                </button>
+              </form>
+              {memberErr && <p className="mt-2 text-xs text-red-400">{memberErr}</p>}
+            </div>
+
+            {/* Register for hackathon */}
+            {!registration && (
+              <div className="rounded-xl border border-border bg-surface p-5">
+                <h2 className="mb-1 text-sm font-medium text-text-primary">Register for Hackathon</h2>
+                <p className="mb-3 text-xs text-text-muted">Your team is not yet registered.</p>
+                {regError && (
+                  <p className="mb-2 text-xs text-red-400">⚠ {regError}</p>
+                )}
+                <button
+                  onClick={handleRegister}
+                  disabled={regLoading || !hackathonId}
+                  className="rounded-lg bg-accent hover:bg-accent-hover px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {regLoading ? 'Registering…' : 'Register Team'}
                 </button>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ── Member-only: Leave ──────────────────────────────────────────── */}
-          {!isLeader && (
-            <div className="pt-4 border-t border-white/8 space-y-3">
-              {registration?.status === 'approved' && !submission && (
-                <Link
-                  to={`/submissions/create?teamId=${id}&hackathonId=${hackathonId}`}
-                  className="mb-4 flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 hover:bg-emerald-500/15 transition"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-emerald-300">🚀 Submit Your Project</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Registration approved — you&apos;re ready to submit!</p>
-                  </div>
-                  <span className="text-emerald-400">→</span>
-                </Link>
-              )}
-              {actionError && (
-                <div className="flex items-start gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                  <span className="mt-0.5">⚠️</span><span>{actionError}</span>
-                </div>
-              )}
-              <button
-                onClick={handleLeave}
-                disabled={leaving}
-                className="rounded-lg border border-amber-500/30 px-4 py-2 text-sm text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50 transition disabled:opacity-60"
+            {/* Submit project */}
+            {registration?.status === 'approved' && !submission && (
+              <Link
+                to={`/submissions/create?teamId=${id}&hackathonId=${hackathonId}`}
+                className="flex items-center justify-between rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-5 py-4 transition-colors hover:bg-emerald-500/10"
               >
-                {leaving ? 'Leaving…' : '🚪 Leave Team'}
+                <div>
+                  <p className="text-sm font-medium text-emerald-400">Submit Your Project</p>
+                  <p className="text-xs text-text-muted mt-0.5">Registration approved — ready to submit!</p>
+                </div>
+                <span className="text-emerald-500">→</span>
+              </Link>
+            )}
+
+            {/* Action error */}
+            {actionError && (
+              <div className="flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                <span>⚠</span><span>{actionError}</span>
+              </div>
+            )}
+
+            {/* Danger zone */}
+            <div className="rounded-xl border border-border bg-surface p-5">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-faint">Danger Zone</h2>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="rounded-lg border border-red-500/30 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:border-red-500/50 transition-colors disabled:opacity-50"
+              >
+                {deleting ? 'Deleting…' : 'Delete Team'}
               </button>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
+
+        {/* Member-only controls */}
+        {!isLeader && (
+          <div className="space-y-4">
+            {registration?.status === 'approved' && !submission && (
+              <Link
+                to={`/submissions/create?teamId=${id}&hackathonId=${hackathonId}`}
+                className="flex items-center justify-between rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-5 py-4 transition-colors hover:bg-emerald-500/10"
+              >
+                <div>
+                  <p className="text-sm font-medium text-emerald-400">Submit Your Project</p>
+                  <p className="text-xs text-text-muted mt-0.5">Registration approved — ready to submit!</p>
+                </div>
+                <span className="text-emerald-500">→</span>
+              </Link>
+            )}
+            {actionError && (
+              <div className="flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                <span>⚠</span><span>{actionError}</span>
+              </div>
+            )}
+            <button
+              onClick={handleLeave}
+              disabled={leaving}
+              className="rounded-lg border border-amber-500/30 px-4 py-2 text-sm text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50 transition-colors disabled:opacity-50"
+            >
+              {leaving ? 'Leaving…' : 'Leave Team'}
+            </button>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

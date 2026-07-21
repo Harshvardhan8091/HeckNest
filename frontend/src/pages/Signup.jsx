@@ -11,26 +11,29 @@ const ROLE_REDIRECT = {
 };
 
 const ROLES = [
-  { value: 'participant', label: '🙋 Participant' },
-  { value: 'organizer', label: '🎯 Organizer' },
-  { value: 'judge', label: '⚖️ Judge' },
+  { value: 'participant', label: 'Participant' },
+  { value: 'organizer',   label: 'Organizer'   },
+  { value: 'judge',       label: 'Judge'        },
 ];
+
+function InlineSpinner() {
+  return (
+    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+    </svg>
+  );
+}
 
 export default function Signup() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'participant',
-  });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'participant' });
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // ── Client-side validation ─────────────────────────────────────────────────
   const validate = () => {
     const errs = {};
     if (!form.name.trim()) errs.name = 'Full name is required.';
@@ -58,14 +61,10 @@ export default function Signup() {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
-
     setLoading(true);
     try {
       const { data } = await api.post('/auth/register', {
-        name: form.name,
-        email: form.email,
-        password: form.password,
-        role: form.role,
+        name: form.name, email: form.email, password: form.password, role: form.role,
       });
       login(data);
       navigate(ROLE_REDIRECT[data.role] ?? '/');
@@ -76,52 +75,39 @@ export default function Signup() {
     }
   };
 
-  // ── Shared field class helper ──────────────────────────────────────────────
   const fieldCls = (name) =>
-    `w-full rounded-lg border bg-white/5 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition
-     focus:ring-2 focus:ring-purple-500
-     ${errors[name] ? 'border-red-500/70' : 'border-white/10 focus:border-purple-500/50'}`;
+    `w-full rounded-lg border bg-elevated px-4 py-2.5 text-sm text-text-primary placeholder-text-faint outline-none transition-colors
+     focus:ring-1 focus:ring-accent
+     ${errors[name] ? 'border-red-500' : 'border-border focus:border-accent'}`;
 
-  // ── UI ─────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-base flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-sm">
 
-        {/* Brand */}
+        {/* Wordmark */}
         <div className="mb-8 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-purple-500/20 px-4 py-1.5 text-sm font-medium text-purple-300 ring-1 ring-purple-500/40">
-            🚀 HeckNest
-          </span>
-          <h1 className="mt-5 text-3xl font-extrabold text-white">Create your account</h1>
-          <p className="mt-1 text-sm text-slate-400">Join thousands of hackers building amazing things</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-text-faint mb-3">HeckNest</p>
+          <h1 className="text-2xl font-semibold text-text-primary">Create your account</h1>
+          <p className="mt-1 text-sm text-text-muted">Join and compete in world-class hackathons</p>
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+        <div className="rounded-xl border border-border bg-surface p-6">
 
-          {/* Server error */}
           {serverError && (
-            <div className="mb-5 flex items-center gap-3 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              <span>⚠️</span>
+            <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              <span className="mt-0.5 shrink-0">⚠</span>
               <span>{serverError}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} noValidate className="space-y-5">
-
-            {/* Full name */}
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
+            {/* Name */}
             <div>
-              <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-slate-300">
-                Full name
-              </label>
+              <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-text-muted">Full name</label>
               <input
-                id="name"
-                name="name"
-                type="text"
-                autoComplete="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Jane Doe"
+                id="name" name="name" type="text" autoComplete="name"
+                value={form.name} onChange={handleChange} placeholder="Jane Doe"
                 className={fieldCls('name')}
               />
               {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name}</p>}
@@ -129,17 +115,10 @@ export default function Signup() {
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-300">
-                Email address
-              </label>
+              <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-text-muted">Email address</label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
+                id="email" name="email" type="email" autoComplete="email"
+                value={form.email} onChange={handleChange} placeholder="you@example.com"
                 className={fieldCls('email')}
               />
               {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email}</p>}
@@ -147,17 +126,10 @@ export default function Signup() {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-300">
-                Password
-              </label>
+              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-text-muted">Password</label>
               <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="At least 6 characters"
+                id="password" name="password" type="password" autoComplete="new-password"
+                value={form.password} onChange={handleChange} placeholder="At least 6 characters"
                 className={fieldCls('password')}
               />
               {errors.password && <p className="mt-1 text-xs text-red-400">{errors.password}</p>}
@@ -165,62 +137,45 @@ export default function Signup() {
 
             {/* Role selector */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-300">
-                I am joining as a…
-              </label>
+              <label className="mb-2 block text-sm font-medium text-text-muted">I am joining as</label>
               <div className="grid grid-cols-3 gap-2">
                 {ROLES.map(({ value, label }) => (
                   <label
                     key={value}
                     htmlFor={`role-${value}`}
-                    className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border p-3 text-center text-xs font-medium transition
+                    className={`flex cursor-pointer items-center justify-center rounded-lg border py-2.5 text-xs font-medium transition-colors
                       ${form.role === value
-                        ? 'border-purple-500 bg-purple-500/20 text-purple-200'
-                        : 'border-white/10 bg-white/5 text-slate-400 hover:border-purple-500/40 hover:text-slate-300'
+                        ? 'border-accent bg-accent/10 text-accent'
+                        : 'border-border bg-elevated text-text-muted hover:border-border-strong hover:text-text-primary'
                       }`}
                   >
                     <input
-                      id={`role-${value}`}
-                      type="radio"
-                      name="role"
-                      value={value}
-                      checked={form.role === value}
-                      onChange={handleChange}
+                      id={`role-${value}`} type="radio" name="role" value={value}
+                      checked={form.role === value} onChange={handleChange}
                       className="sr-only"
                     />
-                    <span className="text-lg">{label.split(' ')[0]}</span>
-                    <span className="mt-0.5 capitalize">{value}</span>
+                    {label}
                   </label>
                 ))}
               </div>
               {errors.role && <p className="mt-1 text-xs text-red-400">{errors.role}</p>}
             </div>
 
-            {/* Submit */}
             <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition
-                hover:from-purple-500 hover:to-pink-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+              type="submit" disabled={loading}
+              className="mt-1 w-full rounded-lg bg-accent hover:bg-accent-hover px-4 py-2.5 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
-                  Creating account…
+                  <InlineSpinner /> Creating account…
                 </span>
-              ) : (
-                'Create account'
-              )}
+              ) : 'Create account'}
             </button>
           </form>
 
-          {/* Footer */}
-          <p className="mt-6 text-center text-sm text-slate-400">
+          <p className="mt-5 text-center text-sm text-text-muted">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-purple-400 hover:text-purple-300 transition">
+            <Link to="/login" className="font-medium text-accent hover:text-accent-hover transition-colors">
               Sign in
             </Link>
           </p>
