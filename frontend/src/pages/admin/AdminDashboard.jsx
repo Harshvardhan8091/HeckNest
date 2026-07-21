@@ -27,6 +27,7 @@ export default function AdminDashboard() {
   const [roleFilter, setRoleFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [actionError, setActionError] = useState('');
 
   // ── Fetch Data ──────────────────────────────────────────────────────────────
   const fetchDashboardData = useCallback(async () => {
@@ -64,31 +65,34 @@ export default function AdminDashboard() {
 
   const handleToggleBlock = async (userId, currentStatus) => {
     if (!window.confirm(`Are you sure you want to ${currentStatus ? 'unblock' : 'block'} this user?`)) return;
+    setActionError('');
     try {
       await api.put(`/users/${userId}/block`);
       fetchDashboardData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to toggle block status.');
+      setActionError(err.response?.data?.message || 'Failed to toggle block status.');
     }
   };
 
   const handleDeleteUser = async (userId) => {
     if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+    setActionError('');
     try {
       await api.delete(`/users/${userId}`);
       fetchDashboardData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete user.');
+      setActionError(err.response?.data?.message || 'Failed to delete user.');
     }
   };
 
   const handleDeleteHackathon = async (hackathonId, title) => {
     if (!window.confirm(`Are you sure you want to delete hackathon "${title}"? This cannot be undone.`)) return;
+    setActionError('');
     try {
       await api.delete(`/hackathons/${hackathonId}`);
       fetchDashboardData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete hackathon.');
+      setActionError(err.response?.data?.message || 'Failed to delete hackathon.');
     }
   };
 
@@ -120,10 +124,24 @@ export default function AdminDashboard() {
 
       <main className="mx-auto max-w-7xl px-6 py-10 space-y-10">
         
-        {/* Error State */}
+        {/* Fetch Error State */}
         {error && (
-          <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-sm text-red-300">
-            ⚠️ {error}
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-sm text-red-300">
+            <span className="flex items-center gap-2"><span>⚠️</span> {error}</span>
+            <button
+              onClick={fetchDashboardData}
+              className="shrink-0 rounded-lg border border-red-500/40 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-500/20 transition"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {/* Action Error Banner */}
+        {actionError && (
+          <div className="flex items-start justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-5 py-4 text-sm text-amber-300">
+            <span className="flex items-start gap-2"><span className="mt-0.5">⚠️</span> {actionError}</span>
+            <button onClick={() => setActionError('')} className="shrink-0 text-xs text-amber-400 hover:text-amber-200 transition">✕</button>
           </div>
         )}
 

@@ -58,58 +58,67 @@ function SectionHeading({ icon, title, count }) {
 // ── Registration row ──────────────────────────────────────────────────────────
 function RegistrationRow({ reg, onStatusChange }) {
   const [busy, setBusy] = useState(false);
+  const [rowErr, setRowErr] = useState('');
 
   const updateStatus = async (newStatus) => {
     setBusy(true);
+    setRowErr('');
     try {
       await api.put(`/registrations/${reg._id}/status`, { status: newStatus });
       onStatusChange(reg._id, newStatus);
-    } catch {
-      // silently fail — user can retry
+    } catch (err) {
+      setRowErr(err.response?.data?.message ?? 'Failed to update status. Please try again.');
     } finally {
       setBusy(false);
     }
   };
 
-  const teamName   = reg.team?.name  ?? reg.team  ?? '—';
+  const teamName    = reg.team?.name  ?? reg.team  ?? '—';
   const memberCount = Array.isArray(reg.team?.members) ? reg.team.members.length : '—';
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/8 bg-white/3 px-5 py-4">
-      <div className="flex flex-col gap-1 min-w-0">
-        <p className="font-semibold text-white truncate">{teamName}</p>
-        <p className="text-xs text-slate-500">
-          {memberCount !== '—' ? `${memberCount} member${memberCount !== 1 ? 's' : ''}` : 'Members unknown'}
-        </p>
-      </div>
+    <div className="rounded-xl border border-white/8 bg-white/3 overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+        <div className="flex flex-col gap-1 min-w-0">
+          <p className="font-semibold text-white truncate">{teamName}</p>
+          <p className="text-xs text-slate-500">
+            {memberCount !== '—' ? `${memberCount} member${memberCount !== 1 ? 's' : ''}` : 'Members unknown'}
+          </p>
+        </div>
 
-      <div className="flex items-center gap-3">
-        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 capitalize
-          ${REG_STATUS_STYLE[reg.status] ?? ''}`}>
-          {reg.status}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 capitalize
+            ${REG_STATUS_STYLE[reg.status] ?? ''}`}>
+            {reg.status}
+          </span>
 
-        {reg.status === 'pending' && (
-          <div className="flex gap-2">
-            <button
-              disabled={busy}
-              onClick={() => updateStatus('approved')}
-              className="flex items-center gap-1.5 rounded-lg bg-emerald-600/20 px-3 py-1.5 text-xs font-semibold text-emerald-300
-                border border-emerald-500/30 hover:bg-emerald-600/30 transition disabled:opacity-50"
-            >
-              {busy ? <InlineSpinner /> : '✓'} Approve
-            </button>
-            <button
-              disabled={busy}
-              onClick={() => updateStatus('rejected')}
-              className="flex items-center gap-1.5 rounded-lg bg-red-600/20 px-3 py-1.5 text-xs font-semibold text-red-300
-                border border-red-500/30 hover:bg-red-600/30 transition disabled:opacity-50"
-            >
-              {busy ? <InlineSpinner /> : '✕'} Reject
-            </button>
-          </div>
-        )}
+          {reg.status === 'pending' && (
+            <div className="flex gap-2">
+              <button
+                disabled={busy}
+                onClick={() => updateStatus('approved')}
+                className="flex items-center gap-1.5 rounded-lg bg-emerald-600/20 px-3 py-1.5 text-xs font-semibold text-emerald-300
+                  border border-emerald-500/30 hover:bg-emerald-600/30 transition disabled:opacity-50"
+              >
+                {busy ? <InlineSpinner /> : '✓'} Approve
+              </button>
+              <button
+                disabled={busy}
+                onClick={() => updateStatus('rejected')}
+                className="flex items-center gap-1.5 rounded-lg bg-red-600/20 px-3 py-1.5 text-xs font-semibold text-red-300
+                  border border-red-500/30 hover:bg-red-600/30 transition disabled:opacity-50"
+              >
+                {busy ? <InlineSpinner /> : '✕'} Reject
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+      {rowErr && (
+        <div className="border-t border-red-500/20 bg-red-500/10 px-5 py-2 text-xs text-red-400">
+          ⚠️ {rowErr}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -22,15 +22,19 @@ function Badge({ status }) {
   );
 }
 
-function StatCard({ icon, label, value, sub }) {
+function StatCard({ icon, label, value, sub, loading }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
       <div className="flex items-center gap-3 mb-1">
         <span className="text-2xl">{icon}</span>
         <span className="text-sm font-medium text-slate-400">{label}</span>
       </div>
-      <p className="text-3xl font-bold text-white">{value}</p>
-      {sub && <p className="mt-0.5 text-xs text-slate-500">{sub}</p>}
+      {loading ? (
+        <div className="mt-1 h-8 w-12 animate-pulse rounded-md bg-white/10" />
+      ) : (
+        <p className="text-3xl font-bold text-white">{value}</p>
+      )}
+      {sub && !loading && <p className="mt-0.5 text-xs text-slate-500">{sub}</p>}
     </div>
   );
 }
@@ -57,7 +61,7 @@ export default function ParticipantDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -74,9 +78,9 @@ export default function ParticipantDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [loadData]);
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
@@ -115,10 +119,10 @@ export default function ParticipantDashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-8">
-          <StatCard icon="🏆" label="Hackathons" value={registrations.length} sub={`${approvedCount} approved`}/>
-          <StatCard icon="👥" label="Teams" value={teams.length}/>
-          <StatCard icon="📦" label="Submissions" value={submissions.length}/>
-          <StatCard icon="✅" label="Approved Regs" value={approvedCount}/>
+          <StatCard icon="🏆" label="Hackathons" value={registrations.length} sub={`${approvedCount} approved`} loading={loading}/>
+          <StatCard icon="👥" label="Teams" value={teams.length} loading={loading}/>
+          <StatCard icon="📦" label="Submissions" value={submissions.length} loading={loading}/>
+          <StatCard icon="✅" label="Approved Regs" value={approvedCount} loading={loading}/>
         </div>
 
         {/* Quick action */}
@@ -150,7 +154,7 @@ export default function ParticipantDashboard() {
 
           {loading && <Spinner />}
 
-          {!loading && teams.length === 0 && (
+          {!loading && !error && teams.length === 0 && (
             <div className="rounded-2xl border border-dashed border-white/10 p-10 text-center">
               <span className="text-4xl">👥</span>
               <p className="mt-3 text-sm text-slate-400">You&apos;re not in any team yet.</p>

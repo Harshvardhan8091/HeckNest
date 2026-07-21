@@ -62,6 +62,8 @@ export default function TeamDetail() {
 
   // ── Fetch team ──────────────────────────────────────────────────────────────
   const loadTeam = async () => {
+    setLoading(true);
+    setError('');
     try {
       const { data } = await api.get(`/teams/${id}`);
       setTeam(data);
@@ -285,6 +287,13 @@ export default function TeamDetail() {
                 </Link>
               )}
 
+              {/* Action error */}
+              {actionError && (
+                <div className="flex items-start gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                  <span className="mt-0.5">⚠️</span><span>{actionError}</span>
+                </div>
+              )}
+
               {/* Delete team */}
               <div className="pt-2 border-t border-white/8">
                 <button
@@ -300,7 +309,7 @@ export default function TeamDetail() {
 
           {/* ── Member-only: Leave ──────────────────────────────────────────── */}
           {!isLeader && (
-            <div className="pt-4 border-t border-white/8">
+            <div className="pt-4 border-t border-white/8 space-y-3">
               {registration?.status === 'approved' && !submission && (
                 <Link
                   to={`/submissions/create?teamId=${id}&hackathonId=${hackathonId}`}
@@ -312,6 +321,11 @@ export default function TeamDetail() {
                   </div>
                   <span className="text-emerald-400">→</span>
                 </Link>
+              )}
+              {actionError && (
+                <div className="flex items-start gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                  <span className="mt-0.5">⚠️</span><span>{actionError}</span>
+                </div>
               )}
               <button
                 onClick={handleLeave}

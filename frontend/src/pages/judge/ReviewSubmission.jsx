@@ -155,6 +155,12 @@ export default function ReviewSubmission() {
   // ── Submit / Update ───────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validate: at least one score must be > 0
+    const allZero = SCORE_FIELDS.every(({ key }) => (scores[key] ?? 0) === 0);
+    if (allZero) {
+      setError('Please score at least one criterion before submitting.');
+      return;
+    }
     setSaving(true);
     setError('');
     try {
