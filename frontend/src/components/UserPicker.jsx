@@ -5,23 +5,26 @@ export default function UserPicker({ role, placeholder, value, onChange }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchErr, setSearchErr] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
+      setSearchErr('');
       return;
     }
 
     const timer = setTimeout(async () => {
       setLoading(true);
+      setSearchErr('');
       try {
         const roleParam = role ? `&role=${role}` : '';
         const { data } = await api.get(`/users/search?search=${encodeURIComponent(query)}${roleParam}`);
-        setResults(data);
+        setResults(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error('User search failed', err);
+        setSearchErr(err.response?.data?.message ?? 'Search failed. Try again.');
       } finally {
         setLoading(false);
       }
@@ -34,6 +37,7 @@ export default function UserPicker({ role, placeholder, value, onChange }) {
     if (!value) {
       setSelectedUser(null);
       setQuery('');
+      setSearchErr('');
     }
   }, [value]);
 
@@ -48,6 +52,7 @@ export default function UserPicker({ role, placeholder, value, onChange }) {
     setSelectedUser(null);
     onChange('');
     setQuery('');
+    setSearchErr('');
   };
 
   if (selectedUser || (value && !selectedUser)) {
@@ -87,6 +92,8 @@ export default function UserPicker({ role, placeholder, value, onChange }) {
         <div className="absolute top-full left-0 z-50 mt-1 w-full overflow-hidden rounded-lg border border-border bg-surface shadow-xl">
           {loading ? (
             <div className="px-4 py-3 text-xs text-text-faint">Searching…</div>
+          ) : searchErr ? (
+            <div className="px-4 py-3 text-xs text-red-400">⚠ {searchErr}</div>
           ) : results.length > 0 ? (
             <ul className="max-h-60 overflow-y-auto">
               {results.map((u) => (
