@@ -160,17 +160,10 @@ export default function TeamDetail() {
 
   return (
     <div className="min-h-screen bg-base">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border bg-base/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <Link to="/participant/dashboard" className="text-sm text-text-muted hover:text-text-primary transition-colors">
-            ← Dashboard
-          </Link>
-          <span className="text-sm font-semibold text-text-primary">HeckNest</span>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-3xl px-6 py-8 space-y-5">
+        <Link to="/participant/dashboard" className="inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors">
+          ← Back to Dashboard
+        </Link>
 
         {/* Team header card */}
         <div className="rounded-xl border border-border bg-surface p-6">

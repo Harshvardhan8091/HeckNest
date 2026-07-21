@@ -96,25 +96,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-base">
-      {/* Topbar */}
-      <header className="sticky top-0 z-10 border-b border-border bg-base/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-text-primary">HeckNest</span>
-            <span className="rounded-md border border-red-500/20 bg-red-500/10 px-1.5 py-0.5 text-xs text-red-400">Admin</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-xs text-text-muted sm:block">{user?.name ?? user?.email}</span>
-            <button
-              onClick={handleSignOut}
-              className="rounded-lg border border-border px-3 py-1.5 text-xs text-text-muted hover:border-border-strong hover:text-text-primary transition-colors"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-7xl px-6 py-8 space-y-8">
 
         {/* Fetch error */}

@@ -114,17 +114,10 @@ export default function CreateHackathon() {
 
   return (
     <div className="min-h-screen bg-base">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border bg-base/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
-          <Link to="/organizer/dashboard" className="text-sm text-text-muted hover:text-text-primary transition-colors">
-            ← Dashboard
-          </Link>
-          <span className="text-sm font-semibold text-text-primary">HeckNest</span>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-2xl px-6 py-8">
+        <Link to="/organizer/dashboard" className="mb-6 inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors">
+          ← Back to Dashboard
+        </Link>
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-text-primary">Create Hackathon</h1>
           <p className="mt-1 text-sm text-text-muted">Fill in the details to launch your event.</p>

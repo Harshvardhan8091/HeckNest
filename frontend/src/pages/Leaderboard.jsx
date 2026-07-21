@@ -73,17 +73,10 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen bg-base">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border bg-base/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-          <Link to={`/hackathons/${id}`} className="text-sm text-text-muted hover:text-text-primary transition-colors">
-            ← Back to hackathon
-          </Link>
-          <Link to="/" className="text-sm font-semibold text-text-primary">HeckNest</Link>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-4xl px-6 py-10">
+      <main className="mx-auto max-w-4xl px-6 py-8">
+        <Link to={`/hackathons/${id}`} className="mb-6 inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors">
+          ← Back to Hackathon
+        </Link>
 
         {/* Page heading */}
         <div className="mb-8">

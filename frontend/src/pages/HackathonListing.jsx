@@ -93,18 +93,6 @@ export default function HackathonListing() {
 
   return (
     <div className="min-h-screen bg-base">
-      {/* Header */}
-      <header className="border-b border-border bg-base/95 backdrop-blur-sm sticky top-0 z-10">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
-          <Link to="/" className="text-sm font-semibold text-text-primary hover:text-accent transition-colors">
-            HeckNest
-          </Link>
-          <Link to="/login" className="rounded-lg border border-border px-3 py-1.5 text-sm text-text-muted hover:border-border-strong hover:text-text-primary transition-colors">
-            Sign in
-          </Link>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-6xl px-6 py-10">
 
         {/* Page title + filters */}

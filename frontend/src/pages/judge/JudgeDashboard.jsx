@@ -85,26 +85,6 @@ export default function JudgeDashboard() {
 
   return (
     <div className="min-h-screen bg-base">
-
-      {/* Topbar */}
-      <header className="sticky top-0 z-10 border-b border-border bg-base/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-text-primary">HeckNest</span>
-            <span className="hidden text-xs text-text-faint sm:block">Judge</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-xs text-text-muted sm:block">{user?.name ?? user?.email}</span>
-            <button
-              onClick={handleSignOut}
-              className="rounded-lg border border-border px-3 py-1.5 text-xs text-text-muted hover:border-border-strong hover:text-text-primary transition-colors"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
 
         {/* Greeting */}
